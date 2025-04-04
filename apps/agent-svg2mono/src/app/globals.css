@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --background: #111111;
+  --foreground: #f7f7f7;
+  --border-color: #333333;
+  --input-bg: #1f1f1f;
+  --input-border: #3d3d3d;
+  --card-bg: #1e1e1e;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --gray-100: #f7f7f7;
+  --gray-200: #e5e5e5;
+  --gray-300: #cccccc;
+  --gray-400: #999999;
+  --gray-500: #666666;
+  --gray-600: #4d4d4d;
+  --gray-700: #333333;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  --gray-950: #0d0d0d;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Dark mode styles for form elements */
+textarea, 
+input[type="text"], 
+input[type="email"], 
+input[type="search"] {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--foreground);
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gray-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-700);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-600);
+}

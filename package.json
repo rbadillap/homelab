@@ -1,5 +1,5 @@
 {
-  "name": "homelab",
+  "name": "@rbadillap/homelab",
   "private": true,
   "scripts": {
     "build": "turbo run build",
