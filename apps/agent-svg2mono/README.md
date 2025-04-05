@@ -10,6 +10,8 @@ SVG2Mono is a web application that converts colorful SVG logos to elegant monoch
 - Maintains legibility and contrast
 - Provides clean white background
 - Powered by Claude AI
+- React hooks for easy integration
+- TypeScript support with full type safety
 
 ## Getting Started
 
@@ -42,7 +44,35 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## API Usage
 
-The application provides a simple API endpoint that you can use directly:
+The application provides multiple ways to integrate the SVG conversion functionality:
+
+### React Hook
+
+The easiest way to use SVG2Mono in your React application is through our custom hook:
+
+```typescript
+import { useSvgMonochrome } from '@/hooks/svg-monochrome'
+
+function YourComponent() {
+  const { convert, svg, isPending, error } = useSvgMonochrome()
+
+  async function handleConvert(svgCode: string) {
+    await convert(svgCode)
+  }
+
+  return (
+    <div>
+      {isPending && <div>Converting...</div>}
+      {error && <div>Error: {error}</div>}
+      {svg && <div dangerouslySetInnerHTML={{ __html: svg }} />}
+    </div>
+  )
+}
+```
+
+### Direct API Call
+
+You can also use the API endpoint directly:
 
 ```typescript
 async function convertSvgToMono(svgCode: string) {
@@ -64,8 +94,29 @@ async function convertSvgToMono(svgCode: string) {
 - [Next.js](https://nextjs.org/) - React framework
 - [AI SDK](https://sdk.vercel.ai/docs) - AI integration
 - [Claude 3 Haiku](https://www.anthropic.com/claude) - AI model
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [React Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components) - Performance optimization
 
-## Created By
+## Implementation Details
+
+### Hook Implementation
+
+The application uses a custom React hook for managing SVG conversion state and API interactions:
+
+```typescript
+interface SvgMonochromeResult {
+  readonly svg: string | null
+  readonly isPending: boolean
+  readonly error: string | null
+  readonly convert: (svgCode: string) => Promise<void>
+}
+
+export function useSvgMonochrome(): SvgMonochromeResult {
+  // Implementation details in hooks/svg-monochrome/index.ts
+}
+```
+
+### API Implementation
 
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
