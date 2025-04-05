@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSvgMonochrome } from '@/registry/new-york/hooks/use-svg-monochrome';
+import { useSvgMonochrome } from '@/hooks/use-svg-monochrome';
 
 interface PreviewProps {
   svg: string | null;
@@ -40,7 +40,7 @@ const EXAMPLE_SVG = `<svg width="48" height="48" viewBox="0 0 48 48" fill="none"
 
 export default function GeneratePage() {
   const [svgCode, setSvgCode] = useState('');
-  const { convert, svg: convertedSvg, isPending, error } = useSvgMonochrome();
+  const { convert, svg: convertedSvg, isPending, error } = useSvgMonochrome('http://localhost:3000/api/generate');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

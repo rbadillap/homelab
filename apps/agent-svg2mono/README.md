@@ -46,15 +46,41 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 The application provides multiple ways to integrate the SVG conversion functionality:
 
+### Pure Function
+
+The most straightforward way to use SVG2Mono is through our pure function, which doesn't have any React dependencies:
+
+```typescript
+import { convertToMono } from '@/hooks/svg-monochrome'
+
+async function convertLogo() {
+  try {
+    const { convertedSvg, explanation } = await convertToMono(svgCode)
+    // Use the converted SVG and explanation
+  } catch (error) {
+    console.error('Failed to convert SVG:', error)
+  }
+}
+```
+
+You can also specify a custom API endpoint:
+
+```typescript
+const result = await convertToMono(svgCode, 'https://your-api.com/convert')
+```
+
 ### React Hook
 
-The easiest way to use SVG2Mono in your React application is through our custom hook:
+For React applications, we provide a custom hook with enhanced UX features:
 
 ```typescript
 import { useSvgMonochrome } from '@/hooks/svg-monochrome'
 
 function YourComponent() {
-  const { convert, svg, isPending, error } = useSvgMonochrome()
+  // Optionally specify a custom API endpoint
+  const { convert, svg, explanation, isPending, error } = useSvgMonochrome()
+  // or with custom API URL:
+  // const { convert, svg, explanation, isPending, error } = useSvgMonochrome('https://your-api.com/convert')
 
   async function handleConvert(svgCode: string) {
     await convert(svgCode)
@@ -64,30 +90,23 @@ function YourComponent() {
     <div>
       {isPending && <div>Converting...</div>}
       {error && <div>Error: {error}</div>}
-      {svg && <div dangerouslySetInnerHTML={{ __html: svg }} />}
+      {svg && (
+        <>
+          <div dangerouslySetInnerHTML={{ __html: svg }} />
+          {explanation && <p>{explanation}</p>}
+        </>
+      )}
     </div>
   )
 }
 ```
 
-### Direct API Call
-
-You can also use the API endpoint directly:
-
-```typescript
-async function convertSvgToMono(svgCode: string) {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ svgCode }),
-  });
-  
-  const data = await response.json();
-  return data.convertedSvg;
-}
-```
+The hook provides:
+- Smooth loading states with React transitions
+- Error handling
+- Type-safe responses
+- Optional API URL configuration
+- AI-generated explanations of the conversion
 
 ## Technology Stack
 
@@ -101,19 +120,30 @@ async function convertSvgToMono(svgCode: string) {
 
 ### Hook Implementation
 
-The application uses a custom React hook for managing SVG conversion state and API interactions:
+The application uses a custom React hook and a pure function for managing SVG conversion:
 
 ```typescript
+interface GenerateResponse {
+  readonly convertedSvg: string
+  readonly explanation: string
+}
+
+// Pure function for non-React usage
+export async function convertToMono(
+  svgCode: string,
+  apiUrl?: string
+): Promise<GenerateResponse>
+
+// React hook with enhanced UX
 interface SvgMonochromeResult {
   readonly svg: string | null
+  readonly explanation: string | null
   readonly isPending: boolean
   readonly error: string | null
   readonly convert: (svgCode: string) => Promise<void>
 }
 
-export function useSvgMonochrome(): SvgMonochromeResult {
-  // Implementation details in hooks/svg-monochrome/index.ts
-}
+export function useSvgMonochrome(apiUrl?: string): SvgMonochromeResult
 ```
 
 ### API Implementation
