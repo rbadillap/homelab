@@ -2,69 +2,50 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSvgMonochrome } from '@/hooks/use-svg-monochrome';
 
-export default function GeneratePage() {
-  const [svgCode, setSvgCode] = useState('');
-  const [convertedSvg, setConvertedSvg] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+interface PreviewProps {
+  svg: string | null;
+  type: 'original' | 'converted';
+}
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ svgCode }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setConvertedSvg(data.convertedSvg);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to convert SVG. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const previewOriginal = svgCode ? 
-    <div className="border border-gray-700/50 rounded-lg p-5 bg-gradient-to-b from-white to-gray-100 flex items-center justify-center h-[250px] shadow-inner" 
-         dangerouslySetInnerHTML={{ __html: svgCode }} /> :
+function Preview({ svg, type }: PreviewProps) {
+  if (!svg) return (
     <div className="border border-gray-700/30 rounded-lg p-5 bg-gray-900/50 flex items-center justify-center h-[250px] text-gray-500 shadow-inner backdrop-blur-sm">
       <div className="text-center">
         <svg className="mx-auto h-12 w-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d={
+            type === 'original' 
+              ? "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              : "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+          } />
         </svg>
-        <p className="mt-2">Original SVG preview will appear here</p>
+        <p className="mt-2">{type === 'original' ? 'Original' : 'Converted'} SVG preview will appear here</p>
       </div>
-    </div>;
+    </div>
+  );
 
-  const previewConverted = convertedSvg ? 
-    <div className="border border-gray-700/50 rounded-lg p-5 bg-gradient-to-b from-white to-gray-100 flex items-center justify-center h-[250px] shadow-inner" 
-         dangerouslySetInnerHTML={{ __html: convertedSvg }} /> :
-    <div className="border border-gray-700/30 rounded-lg p-5 bg-gray-900/50 flex items-center justify-center h-[250px] text-gray-500 shadow-inner backdrop-blur-sm">
-      <div className="text-center">
-        <svg className="mx-auto h-12 w-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-        </svg>
-        <p className="mt-2">Converted SVG preview will appear here</p>
-      </div>
-    </div>;
+  return (
+    <div 
+      className="border border-gray-700/50 rounded-lg p-5 bg-gradient-to-b from-white to-gray-100 flex items-center justify-center h-[250px] shadow-inner" 
+      dangerouslySetInnerHTML={{ __html: svg }} 
+    />
+  );
+}
 
-  const exampleSvg = `<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+const EXAMPLE_SVG = `<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="48" height="48" rx="12" fill="#444CE7"/>
   <!-- Paste your SVG code here -->
 </svg>`;
+
+export default function GeneratePage() {
+  const [svgCode, setSvgCode] = useState('');
+  const { convert, svg: convertedSvg, isPending, error } = useSvgMonochrome();
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await convert(svgCode);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950">
@@ -99,7 +80,7 @@ export default function GeneratePage() {
                   className="w-full p-4 border border-gray-700 rounded-lg font-mono text-sm bg-gray-800/80 text-gray-100 shadow-inner focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all"
                   value={svgCode}
                   onChange={(e) => setSvgCode(e.target.value)}
-                  placeholder={exampleSvg}
+                  placeholder={EXAMPLE_SVG}
                   required
                 />
                 <p className="text-sm text-gray-500">
@@ -109,14 +90,14 @@ export default function GeneratePage() {
               
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isPending}
                 className="w-full px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium shadow-lg shadow-blue-700/20 hover:from-blue-500 hover:to-blue-700 transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-gray-900"
               >
-                {loading ? (
+                {isPending ? (
                   <span className="flex items-center justify-center">
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     Converting...
                   </span>
@@ -144,7 +125,7 @@ export default function GeneratePage() {
                   </span>
                 )}
               </div>
-              {previewOriginal}
+              <Preview svg={svgCode} type="original" />
             </div>
             
             <div className="space-y-5">
@@ -156,7 +137,7 @@ export default function GeneratePage() {
                   </span>
                 )}
               </div>
-              {previewConverted}
+              <Preview svg={convertedSvg} type="converted" />
             </div>
             
             {convertedSvg && (
