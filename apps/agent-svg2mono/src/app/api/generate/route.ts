@@ -4,14 +4,74 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
+// Whitelist of allowed origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3003',
+  'http://localhost:4000',
+  'http://localhost:4001',
+  'http://localhost:4002',
+  'http://localhost:5173', // Vite default port
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:4000',
+];
+
+// Helper function to check if origin is allowed
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  return allowedOrigins.includes(origin) || origin.endsWith('.rbadillap.dev');
+}
+
+// CORS headers for allowed origins
+function getCorsHeaders(origin: string | null): HeadersInit {
+  return {
+    'Access-Control-Allow-Origin': isAllowedOrigin(origin) ? origin! : allowedOrigins[0],
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  
+  if (!isAllowedOrigin(origin)) {
+    return new NextResponse(null, { status: 403 });
+  }
+
+  return new NextResponse(null, {
+    status: 204,
+    headers: getCorsHeaders(origin),
+  });
+}
+
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get('origin');
+
+  // Check if origin is allowed
+  if (!isAllowedOrigin(origin)) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Origin not allowed' }),
+      { 
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+
   try {
     const { svgCode } = await req.json();
     
     if (!svgCode) {
       return NextResponse.json(
         { error: 'SVG code is required' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: getCorsHeaders(origin)
+        }
       );
     }
     
@@ -67,12 +127,17 @@ Please provide ONLY the complete monochromatic version of the SVG code without a
     return NextResponse.json({ 
       convertedSvg,
       explanation: text.replace(svgRegex, '').trim()
+    }, {
+      headers: getCorsHeaders(origin)
     });
   } catch (error) {
     console.error('Error converting SVG:', error);
     return NextResponse.json(
       { error: 'Failed to convert SVG to monochromatic version' },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: getCorsHeaders(origin)
+      }
     );
   }
 } 
