@@ -1,0 +1,20 @@
+{
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "acme",
+    "homepage": "https://homelab.rbadillap.dev",
+    "items": [
+        {
+            "name": "use-svg-monochrome",
+            "type": "registry:block",
+            "title": "Convert SVG to Monochrome",
+            "description": "A hook to convert SVG to monochromatic version",
+            "files": [
+                {
+                    "path": "registry/new-york/hooks/use-svg-monochrome.ts",
+                    "type": "registry:hook"
+                }
+            ]
+        }
+    ]
+  }
+  

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSvgMonochrome } from '@/hooks/use-svg-monochrome';
+import { useSvgMonochrome } from '@/registry/new-york/use-svg-monochrome/use-svg-monochrome';
 
 interface PreviewProps {
   svg: string | null;

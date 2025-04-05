@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-svg-monochrome",
+  "type": "registry:block",
+  "title": "Convert SVG to Monochrome",
+  "description": "A hook to convert SVG to monochromatic version",
+  "files": [
+    {
+      "path": "registry/new-york/hooks/use-svg-monochrome.ts",
+      "content": "'use client'\n\nimport { useState, useTransition } from 'react'\n\ninterface SvgMonochromeState {\n  readonly svg: string | null\n  readonly explanation: string | null\n  readonly error: string | null\n}\n\ninterface GenerateResponse {\n  readonly convertedSvg: string\n  readonly explanation: string\n}\n\ninterface SvgMonochromeResult extends SvgMonochromeState {\n  readonly isPending: boolean\n  readonly convert: (svgCode: string) => Promise<void>\n}\n\nconst initialState: SvgMonochromeState = {\n  svg: null,\n  explanation: null,\n  error: null,\n}\n\nexport function useSvgMonochrome(): SvgMonochromeResult {\n  const [isPending, startTransition] = useTransition()\n  const [state, setState] = useState<SvgMonochromeState>(initialState)\n\n  async function convert(svgCode: string): Promise<void> {\n    if (!svgCode?.trim()) return\n\n    startTransition(() => {\n      setState(prev => ({ ...prev, error: null }))\n    })\n\n    try {\n      const response = await fetch('/api/generate', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ svgCode }),\n      })\n\n      if (!response.ok) {\n        throw new Error(`Failed to convert SVG: ${response.statusText}`)\n      }\n\n      const data = (await response.json()) as GenerateResponse\n\n      startTransition(() => {\n        setState({\n          svg: data.convertedSvg,\n          explanation: data.explanation,\n          error: null,\n        })\n      })\n    } catch (err) {\n      startTransition(() => {\n        setState(prev => ({\n          ...prev,\n          error: err instanceof Error ? err.message : 'Failed to convert SVG',\n        }))\n      })\n    }\n  }\n\n  return {\n    ...state,\n    isPending,\n    convert,\n  }\n} ",
+      "type": "registry:hook"
+    }
+  ]
+}
